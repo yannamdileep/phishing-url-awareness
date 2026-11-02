@@ -1,6 +1,7 @@
-
 import re
 from urllib.parse import urlparse
+
+import streamlit as st
 
 
 def inspect_url(raw_url):
@@ -72,41 +73,66 @@ def inspect_url(raw_url):
     return findings
 
 
-def main():
-    print("=" * 50)
-    print("       PHISHING URL AWARENESS CHECKER")
-    print("=" * 50)
+# Streamlit application interface
+st.set_page_config(
+    page_title="Phishing URL Awareness Checker",
+    page_icon="🔐",
+    layout="centered"
+)
 
-    print("Text checks only - this program does not open URLs.")
-    print("Enter q to quit.\n")
+st.title("🔐 Phishing URL Awareness Checker")
 
-    while True:
-        raw_url = input("Enter a sample URL: ").strip()
+st.write(
+    "Check a URL for common phishing warning signs."
+)
 
-        if raw_url.lower() in ["q", "quit", "exit"]:
-            print("Thank you for using the checker!")
-            break
+st.info(
+    "This tool checks URL text only. "
+    "It does not open URLs or guarantee that a website is safe."
+)
 
-        findings = inspect_url(raw_url)
+url = st.text_input(
+    "Enter a URL to check",
+    placeholder="https://example.com"
+)
 
-        print("\nRESULT:")
+if st.button("Check URL", type="primary"):
 
-        if findings and not findings[0].startswith(
+    if not url.strip():
+        st.warning("Please enter a URL.")
+
+    else:
+        findings = inspect_url(url)
+
+        st.subheader("Analysis Results")
+
+        errors = [
+            "No URL entered.",
+            "Could not identify a hostname.",
+            "This text is not a valid URL format."
+        ]
+
+        if findings[0] in errors:
+            st.error(findings[0])
+
+        elif findings[0].startswith(
             "No listed warning signs"
         ):
-            if findings[0] not in [
-                "No URL entered.",
-                "Could not identify a hostname.",
-                "This text is not a valid URL format."
-            ]:
-                print("REVIEW CAREFULLY!")
+            st.success(findings[0])
 
-        for item in findings:
-            print("- " + item)
+        else:
+            st.warning("Review carefully!")
 
-        print("\nNever enter passwords through unexpected links.")
-        print("-" * 50)
+            for item in findings:
+                st.write("⚠️", item)
 
+        st.caption(
+            "Never enter passwords, OTPs, PINs, or "
+            "banking details through unexpected links."
+        )
 
-if __name__ == "__main__":
-    main()
+st.divider()
+
+st.caption(
+    "Phishing URL Awareness Checker | Cybersecurity Mini Project"
+)
